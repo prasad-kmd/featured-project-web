@@ -119,6 +119,7 @@ import { CustomContextMenu } from "@/components/custom-context-menu";
 import { Footer } from "@/components/footer";
 import { ViewTransitions } from "@/components/view-transitions";
 import ClickSpark from "@/components/ClickSpark";
+import { AccentColorInitializer } from "@/components/accent-color-initializer";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -263,6 +264,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <AccentColorInitializer />
           <TooltipProvider>
             <SidebarProvider>
               <BookmarksProvider>
