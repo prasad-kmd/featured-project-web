@@ -7,8 +7,8 @@ A modern, high-performance technical documentation and engineering portfolio pla
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)
 ![Tailwind](https://img.shields.io/badge/Tailwind_CSS-4-38B2AC?style=for-the-badge&logo=tailwind-css)
 ![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
-![GitHub License](https://img.shields.io/github/license/your-username/next-notion-cms?style=for-the-badge)
-![GitHub commit activity](https://img.shields.io/github/commit-activity/w/your-username/next-notion-cms?style=for-the-badge&logo=github&logoColor=black)
+![GitHub License](https://img.shields.io/github/license/prasad-kmd/featured-project-web?style=for-the-badge)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/w/prasad-kmd/featured-project-web?style=for-the-badge&logo=github&logoColor=black)
 ---
 
 ## ✨ Features
