@@ -1,94 +1,70 @@
-# Design Document: Engineering Workspace
+# Architecture & Design: Engineering Workspace
 
-## Overview
-Engineering Workspace is a high-fidelity technical documentation platform and engineering portfolio template. It is designed to bridge the gap between complex technical data and professional, accessible web presentation.
+## 1. Vision & Identity
+Engineering Workspace is a specialized platform for technical documentation. Its design identity, "Engineering Excellence," is characterized by structured layouts, geometric precision, and a code-first aesthetic.
 
-## Core Technologies
+## 2. Technical Stack
 - **Framework:** Next.js 16 (App Router)
-- **Language:** TypeScript
+- **Runtime:** React 19
 - **Styling:** Tailwind CSS 4
-- **Animations:** Framer Motion & GSAP
-- **Content Processing:** Marked (Markdown), Shiki (Syntax Highlighting), KaTeX (Math rendering)
-- **CMS:** File-based (Zero-database)
+- **Animation:** Framer Motion (Orchestration), GSAP (Complex interactions)
+- **State Management:** React Context API + Custom Hooks
+- **Content Pipeline:** Unified (Remark/Rehype), Shiki, KaTeX
 
-## Architecture
+## 3. Core Architecture
 
-### 1. File-Based CMS Pipeline
-The platform uses a custom pipeline to transform raw Markdown and HTML files into rich, interactive pages.
+### 3.1 File-Based CMS Pipeline
+The CMS is the heart of the platform. It operates on a transformation pipeline that converts static files into rich interactive experiences.
 
-**Flow:**
-1. **Source:** Files are stored in `content/{type}/{slug}.md` or `.html`.
-2. **Parsing:** `gray-matter` extracts frontmatter metadata and raw content.
-3. **Markdown Transformation:** `marked` converts Markdown to HTML.
-4. **Enrichment:**
-   - **Shiki:** Enhances `<pre><code>` blocks with VS Code-accurate highlighting and a custom "Mac-style" UI wrapper.
-   - **Custom Extensions:** Quizzes (`[quiz]...[/quiz]`) and Alerts (`[!NOTE]`) are identified and prepared for hydration.
-   - **Heading IDs:** IDs are injected into `<h2>-<h4>` tags for the Table of Contents.
-5. **Sanitization:** Script tags are removed to prevent accidental execution.
-6. **Hydration (Client-side):** `ContentRenderer` handles:
-   - Dynamic Quiz injection via React components.
-   - External link modification (redirecting through a bridge page).
-   - Math rendering via `katex/contrib/auto-render`.
-   - Code copy buttons.
+#### Transformation Lifecycle:
+1. **Ingestion:** `lib/content.ts` reads files from the `content/` directory based on the requested route.
+2. **Metadata Extraction:** `gray-matter` parses the YAML frontmatter to populate the `ContentItem` interface.
+3. **Markdown Processing:**
+   - **Parsing:** `marked` converts Markdown to HTML.
+   - **Highlighting:** `shiki` identifies code blocks and applies `one-dark-pro` theming. It also wraps blocks in a custom "Mac-style" UI.
+   - **Math Protection:** Display math (`$$...$$`) is wrapped in protected `<div>` tags to prevent Markdown parser interference.
+4. **Enrichment (Static):**
+   - **Heading IDs:** Regex-based injection of IDs into headers for Table of Contents (TOC) generation.
+   - **Alerts:** Transformation of blockquotes into GitHub-style alerts (`[!NOTE]`).
+5. **Sanitization:** Removal of `<script>` tags to ensure security.
+6. **Client-Side Hydration:**
+   - **Quiz Injection:** The `ContentRenderer` identifies quiz placeholders and hydrates them with the `Quiz` React component.
+   - **Math Rendering:** `katex` auto-render scans the hydrated DOM for math expressions.
+   - **Link Processing:** External links are modified to route through the `/external-link` bridge.
 
-### 2. Data Models
+### 3.2 State & Logic Management
+The platform uses a decentralized state approach, leveraging React Context for cross-cutting concerns.
 
-#### ContentItem
-Represents a blog post, article, project, or wiki entry.
-```typescript
-interface ContentItem {
-  slug: string;
-  title: string;
-  date?: string;
-  description?: string;
-  content: string; // Processed HTML
-  rawContent: string;
-  final?: boolean;
-  firstImage?: string;
-  readingTime?: number;
-  technical?: string;
-  category?: string;
-  tags?: string[];
-  aiAssisted?: boolean;
-  author?: string;
-  type?: "blog" | "articles" | "projects" | "tutorials" | "wiki" | "quizzes";
-}
-```
+- **`BookmarksContext`:** Manages user-saved content in `localStorage`.
+- **`SidebarContext`:** Orchestrates the navigation state and collapsible behaviors.
+- **`ThemeContext`:** Handles dark/light mode switching via `next-themes`.
 
-#### Author
-Represents a contributor.
-```typescript
-interface Author {
-  name: string;
-  slug: string;
-  role: string;
-  bio: string;
-  avatar: string;
-  twitter?: string;
-  github?: string;
-  linkedin?: string;
-  bodyContent?: string;
-}
-```
+### 3.3 Custom Hook System
+- **`useAccentColor`:** Manages the dynamic primary color system.
+- **`usePersistentState`:** A wrapper around `useState` that syncs with `localStorage`.
+- **`useDebounce`:** Optimizes search and filtering operations.
 
-### 3. Component Architecture
-- **UI Components (`components/ui/`):** Atomic components (Buttons, Inputs, Dialogs) based on Radix UI.
-- **Feature Components (`components/`):** High-level components like `FeaturedHero`, `MagicBento`, `ContentRenderer`, and `Quiz`.
-- **Layouts:** Use of the App Router's nested layouts for persistent sidebars and navigation.
+## 4. UI/UX Systems
 
-## UI/UX Philosophy
+### 4.1 "Engineering Excellence" Design System
+The visual language is defined by:
+- **Local Fonts:** Precise typography using `JetBrains Mono` and `Inter`.
+- **Geometric Grid Systems:** Used as background patterns to reinforce the engineering theme.
+- **Interactive Feedback:** `ClickSpark` for tactile input feedback and `Framer Motion` for layout transitions.
 
-### Engineering Excellence Aesthetic
-The design focuses on a "Technical Dashboard" feel. Key elements include:
-- **Geometric Grid Systems:** Used in backgrounds and headers to convey structure.
-- **Code-Focused Aesthetics:** Mono fonts, syntax-highlighted accents, and terminal-like wrappers.
-- **High-Fidelity Feedback:** Use of Framer Motion for subtle transitions and `ClickSpark` for interactive feedback.
+### 4.2 Component Categories
+- **Layout Primitives:** `Container`, `Section`, `Grid`.
+- **Technical UI:** `ContentRenderer`, `TOC`, `ArticleSidebar`.
+- **Interactive Widgets:** `Quiz`, `MagicBento`, `SkillMatrix`.
+- **Utility Components:** `BookmarkButton`, `AIContentIndicator`.
 
-### Accessibility & Performance
-- **Theme Support:** Robust dark/light mode via `next-themes`.
-- **Responsive Design:** Mobile-first approach with a collapsible sidebar for tablet/desktop.
-- **Fast Hydration:** Critical content is rendered on the server, with interactive elements (Quizzes, Math) hydrated progressively on the client.
+## 5. Performance Strategy
+- **Static Generation:** Extensive use of `generateStaticParams` for content routes.
+- **Aggressive Caching:** Use of React `cache` for filesystem-heavy operations.
+- **Dynamic Imports:** Non-critical libraries (like KaTeX auto-render) are loaded on-demand.
+- **Optimized Assets:** Local fonts are configured with `display: swap` to minimize FOIT.
 
-## Routing Strategy
-- **Static Content:** Pages in `/blog`, `/projects`, etc., are statically generated via `generateStaticParams` for optimal performance.
-- **Dynamic Utilities:** `/api/og` for dynamic OpenGraph images and `/api/search` for full-text search capability.
+## 6. Security Model
+- **Input Sanitization:** HTML is sanitized during the build process.
+- **Domain Whitelisting:** Contact forms use a temp-mail blacklist.
+- **Bridge Redirects:** External navigation is intercepted to provide user warnings.

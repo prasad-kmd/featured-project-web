@@ -1,58 +1,78 @@
-# Agent Guide: Engineering Workspace
+# Agent Manual: Operating on Engineering Workspace
 
-Welcome, Agent. This guide provides technical context and instructions for working within the Engineering Workspace repository.
+This manual provides detailed workflows and standards for AI agents and developers to effectively contribute to and maintain the Engineering Workspace codebase.
 
-## 🤖 System Context
-Engineering Workspace is a file-based CMS platform built with Next.js 16. It prioritizes technical documentation and high-performance rendering.
+## 🤖 Mission Context
+Engineering Workspace is a specialized Next.js 16 platform. All operations should prioritize performance, technical aesthetics, and type safety.
 
-## 📂 Key Directories
-- `app/`: Next.js App Router routes. Logic for data fetching should primarily happen here.
-- `components/`: React components. `ui/` contains Radix-based primitives.
-- `content/`: The "database". Markdown (`.md`) and HTML (`.html`) files organized by type.
-- `lib/`: Core logic. `content.ts` is the heart of the CMS pipeline.
-- `types/`: Shared TypeScript interfaces.
+## 📂 Repository Navigation
 
-## 🛠 Working with the CMS
+### Core Logic
+- `lib/content.ts`: The CMS engine. Modify this to change how Markdown/HTML is processed.
+- `lib/animations.ts`: Standardized Framer Motion variants. Use these for UI consistency.
+- `lib/config.ts`: Global site metadata and social links.
 
-### Adding New Content
-To add a post, create a file in `content/{blog|articles|projects|wiki}/your-slug.md`.
-**Frontmatter Requirements:**
-```yaml
----
-title: "Title"
-date: "YYYY-MM-DD"
-description: "Brief summary"
-author: "author-slug"
-status: "Published"
----
-```
+### Content Hierarchy
+- `content/blog/`: News and updates.
+- `content/articles/`: Detailed documentation.
+- `content/projects/`: Portfolio items.
+- `content/wiki/`: Permanent knowledge base.
+- `content/authors/`: contributor profiles.
 
-### Adding New Content Types
-1. Update the `type` union in `lib/content.ts` (specifically in `getContentByType` and `getContentItem`).
-2. Create the corresponding directory in `content/`.
-3. Create a new route in `app/` (e.g., `app/your-type/page.tsx` and `app/your-type/[slug]/page.tsx`).
+### UI Components
+- `components/ui/`: Atomic Radix-based components.
+- `components/unique-cards.tsx`: Specialized card designs for different content types.
+- `components/content-renderer.tsx`: The client-side bridge for CMS content.
 
-### Extending the Pipeline
-The transformation pipeline is in `lib/content.ts`. If you need to add support for new Markdown syntax:
-1. Add a regex or extension to the `marked` configuration.
-2. If it requires client-side hydration, update `components/content-renderer.tsx`.
+## 🛠 Standard Workflows
 
-## 📜 Coding Standards
+### 1. Adding a New Post
+1. Identify the target collection (e.g., `projects`).
+2. Create `content/projects/slug-name.md`.
+3. Fill mandatory frontmatter:
+   ```yaml
+   ---
+   title: "Project Alpha"
+   slug: "project-alpha"
+   date: "2025-01-01"
+   description: "Summary of the project."
+   author: "your-author-slug"
+   tags: ["Engineering", "Robotics"]
+   ---
+   ```
+4. Verify the new page at `/projects/slug-name`.
+
+### 2. Extending the Content Pipeline
+To add a new Markdown syntax (e.g., a custom diagram shortcode):
+1. **Parser Level:** Update `marked` extensions in `lib/content.ts`.
+2. **HTML Level:** Ensure the extension returns a specific class or data attribute.
+3. **Hydration Level:** If interactivity is needed, add a processor to the `useEffect` in `components/content-renderer.tsx`.
+
+### 3. Adding a UI Component
+1. Place atomic components in `components/ui/`.
+2. Use `cn()` utility for class merging.
+3. Ensure the component supports the current theme system (`dark:` classes).
+4. Export through a named export for better tree-shaking.
+
+## 📜 Coding Guidelines
 
 ### TypeScript
-- **Avoid `any`:** When encountered, attempt to replace with specific types or `unknown`.
-- **Interfaces:** Prefer `interface` for object shapes that might be extended.
+- **No `any`:** Use interfaces or generics. If a type is unknown, use `unknown`.
+- **Zod:** Use Zod for any data validation, especially from external sources or environment variables.
 
-### Components
-- **Server Components:** Use Server Components by default for better performance.
-- **Client Components:** Use `"use client"` only for components requiring interactivity (hooks, event listeners).
+### React
+- **Composition:** Prefer component composition over deep prop drilling.
+- **Hooks:** Extract reusable logic into hooks in the `hooks/` directory.
 
 ### Styling
-- **Tailwind CSS 4:** Use utility classes. Avoid arbitrary values unless absolutely necessary.
-- **Theming:** Use CSS variables (e.g., `var(--primary)`) to support theme switching.
+- **Utility First:** Use Tailwind utility classes.
+- **Theming:** Use CSS variables for colors (e.g., `text-primary`, `bg-background`).
+- **Variants:** Use `class-variance-authority` (CVA) for components with multiple states.
 
-## 🔍 Verification Checklist
-- [ ] Run `pnpm lint` before submitting changes.
-- [ ] Ensure new content has a valid slug and frontmatter.
-- [ ] Verify that external links are correctly processed by the bridge.
-- [ ] Check OpenGraph image generation if adding new routes.
+## 🔍 Verification Protocol
+Before submitting any code change:
+- [ ] **Linting:** Run `pnpm lint`.
+- [ ] **Accessibility:** Check that new interactive elements have appropriate ARIA attributes.
+- [ ] **Responsiveness:** Verify the change on mobile and desktop viewports.
+- [ ] **Themes:** Check both Light and Dark mode appearance.
+- [ ] **Content Pipeline:** If `lib/content.ts` was modified, verify all existing post types still render correctly.
