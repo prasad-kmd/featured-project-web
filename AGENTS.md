@@ -1,78 +1,63 @@
-# Agent Manual: Operating on Engineering Workspace
+# Agent Operational Protocol: Engineering Workspace
 
-This manual provides detailed workflows and standards for AI agents and developers to effectively contribute to and maintain the Engineering Workspace codebase.
+This manual provides authoritative instructions for AI agents and developers tasked with extending, maintaining, or refactoring the Engineering Workspace platform.
 
-## 🤖 Mission Context
-Engineering Workspace is a specialized Next.js 16 platform. All operations should prioritize performance, technical aesthetics, and type safety.
+## 1. Environment & Context
+Engineering Workspace is a precision-built technical workspace. Maintain the "Engineering Excellence" standard in all operations.
 
-## 📂 Repository Navigation
+## 2. Core Directory Workflows
 
-### Core Logic
-- `lib/content.ts`: The CMS engine. Modify this to change how Markdown/HTML is processed.
-- `lib/animations.ts`: Standardized Framer Motion variants. Use these for UI consistency.
-- `lib/config.ts`: Global site metadata and social links.
+### 2.1 Managing Content (`content/`)
+The `content/` directory is the repository's database.
+- **Hierarchy:** Always place new files in the correct subdirectory (`blog`, `articles`, `projects`, `wiki`, `authors`).
+- **File Format:** Prefer `.md` for text-heavy content and `.html` for custom layout pages.
+- **Frontmatter Standard:** Every file MUST contain valid YAML frontmatter.
+  ```yaml
+  title: "Example Title"
+  slug: "example-slug" # Must match filename
+  date: "YYYY-MM-DD"
+  status: "Published"
+  author: "author-slug" # Reference content/authors/author-slug.md
+  ```
 
-### Content Hierarchy
-- `content/blog/`: News and updates.
-- `content/articles/`: Detailed documentation.
-- `content/projects/`: Portfolio items.
-- `content/wiki/`: Permanent knowledge base.
-- `content/authors/`: contributor profiles.
+### 2.2 Extending the Pipeline (`lib/content.ts`)
+The content pipeline transforms files into components.
+- **Refactoring:** When modifying logic, ensure support for both `.md` and `.html` variants.
+- **New Features:** If adding a new Markdown shortcode (like quizzes), update the `marked` tokenizer and the `ContentRenderer` hydration logic.
 
-### UI Components
-- `components/ui/`: Atomic Radix-based components.
-- `components/unique-cards.tsx`: Specialized card designs for different content types.
-- `components/content-renderer.tsx`: The client-side bridge for CMS content.
+### 2.3 UI Components (`components/`)
+- **Atomic Components:** Keep primitives in `components/ui/`.
+- **Feature Components:** Group logic-heavy components in the root `components/` directory.
+- **Client Directives:** Only use `"use client"` when necessary for hooks or event listeners.
 
-## 🛠 Standard Workflows
+## 3. Technical Pitfalls & Constraints
 
-### 1. Adding a New Post
-1. Identify the target collection (e.g., `projects`).
-2. Create `content/projects/slug-name.md`.
-3. Fill mandatory frontmatter:
-   ```yaml
-   ---
-   title: "Project Alpha"
-   slug: "project-alpha"
-   date: "2025-01-01"
-   description: "Summary of the project."
-   author: "your-author-slug"
-   tags: ["Engineering", "Robotics"]
-   ---
-   ```
-4. Verify the new page at `/projects/slug-name`.
+### 3.1 Type Safety
+- **Avoid `any`:** This is a zero-tolerance policy for new code. Use specific library types or `unknown`.
+- **Zod:** Use Zod for any new configuration or environment variable definitions.
 
-### 2. Extending the Content Pipeline
-To add a new Markdown syntax (e.g., a custom diagram shortcode):
-1. **Parser Level:** Update `marked` extensions in `lib/content.ts`.
-2. **HTML Level:** Ensure the extension returns a specific class or data attribute.
-3. **Hydration Level:** If interactivity is needed, add a processor to the `useEffect` in `components/content-renderer.tsx`.
+### 3.2 Performance
+- **Client Hydration:** Be mindful of the `ContentRenderer`. Do not add heavy client-side processing that blocks the main thread.
+- **Imports:** Always use named imports from `lucide-react` to enable tree-shaking.
 
-### 3. Adding a UI Component
-1. Place atomic components in `components/ui/`.
-2. Use `cn()` utility for class merging.
-3. Ensure the component supports the current theme system (`dark:` classes).
-4. Export through a named export for better tree-shaking.
+### 3.3 Animations
+- **Syncing:** Ensure Framer Motion and GSAP animations do not conflict. Prefer Framer Motion for layout-level transitions.
 
-## 📜 Coding Guidelines
+## 4. Operational Tasks
 
-### TypeScript
-- **No `any`:** Use interfaces or generics. If a type is unknown, use `unknown`.
-- **Zod:** Use Zod for any data validation, especially from external sources or environment variables.
+### 4.1 Adding a New Content Type
+1. Create a directory in `content/`.
+2. Update the `type` union in `lib/content.ts`.
+3. Create `app/{type}/page.tsx` (Listing) and `app/{type}/[slug]/page.tsx` (Detail).
+4. Register the new type in the `Navigation` component.
 
-### React
-- **Composition:** Prefer component composition over deep prop drilling.
-- **Hooks:** Extract reusable logic into hooks in the `hooks/` directory.
+### 4.2 Updating Branding
+1. Modify `lib/config.ts` for site metadata.
+2. Update global CSS variables in `app/globals.css` for primary theme shifts.
 
-### Styling
-- **Utility First:** Use Tailwind utility classes.
-- **Theming:** Use CSS variables for colors (e.g., `text-primary`, `bg-background`).
-- **Variants:** Use `class-variance-authority` (CVA) for components with multiple states.
-
-## 🔍 Verification Protocol
-Before submitting any code change:
-- [ ] **Linting:** Run `pnpm lint`.
-- [ ] **Accessibility:** Check that new interactive elements have appropriate ARIA attributes.
-- [ ] **Responsiveness:** Verify the change on mobile and desktop viewports.
-- [ ] **Themes:** Check both Light and Dark mode appearance.
-- [ ] **Content Pipeline:** If `lib/content.ts` was modified, verify all existing post types still render correctly.
+## 5. Pre-Submission Checklist
+- [ ] Run `pnpm lint` and resolve all warnings.
+- [ ] Verify content rendering for Blogs, Projects, and Wiki.
+- [ ] Test the "Command + K" search functionality.
+- [ ] Validate responsive behavior in both Light and Dark modes.
+- [ ] Ensure all external links correctly use the security bridge.

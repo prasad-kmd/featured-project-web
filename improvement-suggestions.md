@@ -1,99 +1,111 @@
-# Technical Improvement Roadmap: Engineering Workspace
+# Comprehensive Technical Improvement Roadmap
 
-This document provides a comprehensive analysis and actionable roadmap for enhancing the Engineering Workspace platform across code quality, performance, security, architecture, and developer experience.
+This document provides an exhaustive analysis and actionable roadmap for enhancing the Engineering Workspace platform, covering code quality, performance, security, readability, best practices, and architecture.
 
 ## 1. Code Quality & Type Safety
 
-### 🛡️ Strict TypeScript Adoption
-The current implementation of `lib/content.ts` relies heavily on `any` types for complex library objects (Shiki highlighters, Marked tokens, etc.).
-- **Suggestion:** Eliminate all `any` usage.
-- **Implementation:**
-  - Explicitly type the `highlighter` using `Highlighter` from `shiki`.
-  - Define interfaces for custom Marked extensions and rehype nodes.
-  - Enable `strict: true` in `tsconfig.json` and address the resulting errors.
-- **Impact:** Reduces runtime errors and significantly improves the developer experience with robust IDE support.
+### 🛡️ Eliminating "Any" Types
+The repository currently relies on `any` in critical paths, particularly in `lib/content.ts` for library-provided objects from Shiki and Marked.
+- **Suggestion:** Fully type the content pipeline.
+- **Details:**
+  - Use `Highlighter` from `shiki` for the highlighter instance.
+  - Define a strict `Token` interface for custom Marked extensions.
+  - Implement a `RehypeNode` type for tree transformations.
+- **Priority:** Critical
 
-### 🧪 Comprehensive Testing Suite
-The repository currently lacks a formal testing framework.
-- **Suggestion:** Implement a multi-layered testing strategy.
-- **Implementation:**
-  - **Unit Testing:** Use `Vitest` for logic in `lib/content.ts` and `lib/utils.ts`. Test the Markdown-to-HTML transformation for edge cases (nested math, malformed JSON in quizzes).
-  - **Component Testing:** Use `Playwright` or `Cypress` for visual regression testing of the "Engineering Excellence" aesthetic.
-  - **Integration Testing:** Verify the end-to-end CMS pipeline from file read to hydrated React component.
-- **Impact:** Ensures stability during refactoring and prevents regressions in the complex content pipeline.
+### 🧪 Advanced Testing Strategy
+There is currently no automated testing infrastructure.
+- **Suggestion:** Implement a three-tiered testing system.
+- **Details:**
+  - **Unit Tests (Vitest):** Target transformation logic in `lib/content.ts` (e.g., regex for alerts, heading ID generation).
+  - **Component Tests (React Testing Library):** Verify state management in `BookmarksProvider` and theme switching.
+  - **End-to-End Tests (Playwright):** Validate the full CMS pipeline, ensuring that a Markdown file correctly renders with hydrated Quizzes and KaTeX.
+- **Priority:** High
 
-## 2. Architecture & Extensibility
+### 🧩 Linting & Formatting
+The current ESLint setup has missing dependencies and relies on deprecated config formats.
+- **Suggestion:** Modernize the linting pipeline.
+- **Details:**
+  - Standardize on ESLint 10+ with the Flat Config system.
+  - Integrate `eslint-plugin-perfectionist` for consistent object/import sorting.
+  - Add `prettier-plugin-tailwindcss` to enforce utility class order.
+- **Priority:** Medium
 
-### 🧩 Plugin-Based CMS Pipeline
-The content transformation logic is currently monolithic and hardcoded.
-- **Suggestion:** Refactor to a modular plugin system.
-- **Implementation:**
-  - Instead of manual regex replacements in `lib/content.ts`, use the `unified` ecosystem fully (`remark` -> `rehype`).
-  - Move Quiz injection, Alert processing, and Heading ID injection into dedicated `rehype` plugins.
-  - Implement a registry for content types (`blog`, `projects`, etc.) rather than switch statements or hardcoded path logic.
-- **Impact:** Allows developers to easily add new features to the content pipeline without modifying core CMS logic.
+## 2. Performance & Scalability
 
-### ⚙️ Schema-Validated Configuration
-`lib/config.ts` handles site metadata through a plain object with environment variables.
-- **Suggestion:** Use `Zod` for runtime configuration validation.
-- **Implementation:**
-  - Define a configuration schema using Zod.
-  - Validate `process.env` at build time and application startup.
-  - Provide meaningful error messages if required variables (like `NEXT_PUBLIC_GITHUB_USERNAME`) are missing.
-- **Impact:** Prevents "silent" failures due to misconfiguration and provides a clear contract for template users.
+### 🖼️ Intelligent Image Processing
+The platform lacks an automated pipeline for image optimization within Markdown.
+- **Suggestion:** Implement a custom `rehype` plugin for images.
+- **Details:**
+  - Intercept `<img>` tags and replace them with Next.js `<Image />` components.
+  - Use a library like `lqip-modern` to generate Low-Quality Image Placeholders (LQIP) at build time for a "blur-up" effect.
+  - Implement automated `srcSet` generation for different device resolutions.
+- **Priority:** High
 
-## 3. Performance Optimization
+### ⚡ Bundle size & Hydration
+Large libraries like `chart.js` and `shiki` can bloat the main bundle.
+- **Suggestion:** Implement aggressive code splitting.
+- **Details:**
+  - Use `next/dynamic` with `ssr: false` for the `Quiz` component to avoid loading logic for users not interacting with quizzes.
+  - Migrate from the monolithic `shiki` bundle to the more modular `@shikijs/core` to load only required themes and languages on-demand.
+- **Priority:** Medium
 
-### 🖼️ Advanced Image Pipeline
-Images in Markdown are currently rendered as standard `<img>` tags unless manually optimized.
-- **Suggestion:** Automate image optimization within the CMS.
-- **Implementation:**
-  - Use a `rehype` plugin to swap `<img>` tags for Next.js `<Image />` components.
-  - Automatically extract image dimensions at build time to prevent Layout Shift (CLS).
-  - Implement "Blur-up" placeholders using generated base64 strings or standard SVGs.
-- **Impact:** Drastically improves Core Web Vitals and user experience on slower connections.
+### 📦 Cold Start & API Optimization
+Server-side operations in the CMS pipeline can be heavy.
+- **Suggestion:** Optimize the content loader.
+- **Details:**
+  - Use `unstorage` or a similar caching layer to store processed HTML, reducing parsing time on subsequent requests.
+  - Implement incremental static regeneration (ISR) for high-traffic content areas.
+- **Priority:** Medium
 
-### ⚡ Dynamic Dependency Loading
-Heavy libraries like `chart.js` and `jspdf` may be bundled even when not in use.
-- **Suggestion:** Aggressive code-splitting.
-- **Implementation:**
-  - Ensure the `Quiz` component and any chart-related components are loaded via `next/dynamic` with `ssr: false` where appropriate.
-  - Verify that Shiki's language bundles are being lazy-loaded (standard in newer versions but requires careful configuration).
-- **Impact:** Reduces the initial JavaScript bundle size, leading to faster Time to Interactive (TTI).
+## 3. Security & Resilience
 
-## 4. Security & Robustness
+### 🧼 Robust Content Sanitization
+The current regex-based sanitization in `lib/content.ts` is insufficient for complex HTML content.
+- **Suggestion:** Implement `isomorphic-dompurify`.
+- **Details:**
+  - Sanitize all content server-side after the transformation pipeline.
+  - Define a strict `ALLOWED_TAGS` whitelist that includes specialized math (`<annotation>`, `<semantics>`) and code block attributes.
+- **Priority:** Critical
 
-### 🧼 Server-Side Sanitization
-The current sanitization relies on basic regex which can be bypassed.
-- **Suggestion:** Use `isomorphic-dompurify`.
-- **Implementation:**
-  - Sanitize all generated HTML in `lib/content.ts` before it reaches the client.
-  - Define a strict whitelist of allowed tags and attributes, specifically targeting math and code block wrappers.
-- **Impact:** Provides robust protection against Cross-Site Scripting (XSS) attacks.
+### 🔗 Secure Navigation Bridging
+The external link redirect system (`/external-link`) is a potential open-redirect vector.
+- **Suggestion:** Implement redirect whitelisting.
+- **Details:**
+  - Add a cryptographic signature to external links generated by the CMS to ensure they were authorized.
+  - Validate the `target` origin against a user-defined whitelist in `siteConfig`.
+- **Priority:** High
 
-### 🔗 Secure External Redirects
-The `/external-link` bridge is a good UX feature but can be an "Open Redirect" vulnerability.
-- **Suggestion:** Validate redirect targets.
-- **Implementation:**
-  - Check the `url` parameter against a set of valid protocols (`https:` only).
-  - Implement a "Continue to site" warning with a timeout or a manual click-through.
-- **Impact:** Protects users from phishing attacks that leverage the site's domain.
+### 🛡️ Environment Hardening
+- **Suggestion:** Schema-validate environment variables.
+- **Details:** Use `t3-env` or `zod` to validate all `process.env` variables at build and runtime, providing clear failure reasons if configuration is missing.
+- **Priority:** Medium
 
-## 5. UI/UX & Accessibility
+## 4. Architecture & Design Patterns
 
-### ♿ Enhanced Accessibility (A11y)
-Custom interactive elements like `ClickSpark` and `MagicBento` need careful accessibility handling.
-- **Suggestion:** Standardize ARIA usage.
-- **Implementation:**
-  - Ensure all Radix primitives are configured with appropriate `aria-label` and `aria-describedby` props.
-  - Implement keyboard navigation for the `FloatingNavbar` and `Command Palette`.
-  - Add a "Reduced Motion" preference check for Framer Motion animations.
-- **Impact:** Makes the technical documentation accessible to all engineers, regardless of their navigation method.
+### 🧩 Plugin-Based Content Pipeline
+The `lib/content.ts` logic is currently monolithic.
+- **Suggestion:** Transition to a full `unified` ecosystem.
+- **Details:**
+  - Refactor manual regex replacements (Alerts, Quizzes, Heading IDs) into standalone `remark` or `rehype` plugins.
+  - This allows for easier unit testing of individual transformation steps and makes the pipeline highly extensible.
+- **Priority:** High
+
+### 🏗️ Domain-Driven Component Structure
+- **Suggestion:** Reorganize the `components/` directory.
+- **Details:**
+  - **`components/ui`**: Primitive, unstyled/low-styled components (Shadcn/Radix).
+  - **`components/cms`**: Content-specific components (`ContentRenderer`, `TOC`, `ArticleSidebar`).
+  - **`components/shared`**: Layout and global components.
+- **Priority:** Low
+
+## 5. Readability & Best Practices
+
+### ✍️ Documentation as Code
+- **Suggestion:** Implement auto-generated documentation for the component library using `Storybook` or `JSDoc`.
+- **Priority:** Low
 
 ### 🎨 Design System Tokenization
-Tailwind CSS 4 allows for powerful tokenization.
-- **Suggestion:** Move from hardcoded hex values to semantic tokens.
-- **Implementation:**
-  - Define a comprehensive theme in `tailwind.config.js` or CSS variables (e.g., `--code-bg`, `--brand-primary`).
-  - Update the Shiki wrapper and custom cards to use these tokens.
-- **Impact:** Simplifies customization for template users and ensures consistency across the platform.
+- **Suggestion:** Fully embrace CSS variables for theming.
+- **Details:** Replace all remaining hardcoded hex values in component logic (like the Shiki Mac-style wrapper) with semantic tokens (e.g., `--terminal-header-bg`).
+- **Priority:** Medium

@@ -1,6 +1,6 @@
 # Engineering Workspace
 
-A high-performance, technically-inspired documentation and engineering portfolio platform. Optimized for mechatronics research, digital architecture, and high-fidelity project showcasing.
+A modern, high-performance technical documentation and engineering portfolio platform built with **Next.js 16**, **Tailwind CSS 4**, and **TypeScript**. Optimized for mechatronics research, digital architecture, and high-fidelity documentation.
 
 ---
 
@@ -10,92 +10,141 @@ A high-performance, technically-inspired documentation and engineering portfolio
 [![Runtime: React 19](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
 [![Animation: Framer Motion](https://img.shields.io/badge/Framer_Motion-12-ff69b4?style=for-the-badge&logo=framer)](https://www.framer.com/motion/)
 [![Deployment: Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 ---
 
-## 🚀 Vision: Engineering Excellence
-Engineering Workspace isn't just a portfolio; it's a technical dashboard designed to communicate complex engineering concepts with precision and style.
+## ✨ Features
 
-### ✨ Core Features
-- **📂 File-Based CMS:** Zero-database architecture. Manage everything via Markdown (`.md`) and HTML (`.html`).
-- **🎨 Technical UI Identity:** A custom design language featuring geometric grid systems, terminal-style code blocks, and dynamic bento grids.
-- **🛠️ Advanced pipeline:**
-  - **Premium Highlighting:** VS Code-accurate Shiki highlighting with Mac-style window UI.
-  - **LaTeX Mastery:** First-class support for complex mathematical notation.
-  - **Interactive Knowledge:** Injectable quiz components for educational content.
-- **✍️ Multi-Author System:** Detailed contributor "Dossiers" with social links and contribution metrics.
-- **🛡️ Enterprise Grade:** Spam-protected contact forms, temporary mail domain blocking, and secure link bridging.
+### 🚀 Performance-First Architecture
+- **Next.js 16 App Router:** Lightning-fast server-side rendering and minimal client-side hydration.
+- **Zero-Database CMS:** Manage your entire site via Markdown (`.md`) and HTML (`.html`) files. No complex database management or migrations required.
+- **Static Generation:** Optimized for speed with full support for `generateStaticParams` and aggressive caching.
 
-## 🏁 Getting Started
+### 🎨 Unique Design Identity ("Engineering Excellence")
+- **Redesigned Hero (v7):** A technical dashboard aesthetic featuring a timed carousel of latest works, geometric grid systems, and code-focused visual accents.
+- **Magic Bento Grid:** A dynamic, interactive layout system for showcasing key highlights and skills.
+- **Specialized Content Cards:** Distinct visual identities for Blog, Articles, and Projects to help users distinguish between different content types.
+- **Technical Wiki:** A structured digital garden designed for persistent knowledge and extensive documentation.
 
-### 1. Installation & Local Setup
+### 🛠️ Advanced Technical Pipeline
+- **Premium Syntax Highlighting:** Powered by Shiki with VS Code-accurate themes (One Dark Pro) and a custom Mac-style terminal UI.
+- **LaTeX Math Support:** Full math notation rendering via KaTeX ($...$ and $$...$$).
+- **Interactive Quizzes:** Inject dynamic, JSON-encoded quiz components directly into your Markdown content.
+- **GitHub-style Alerts:** Native support for `[!NOTE]`, `[!TIP]`, `[!WARNING]`, and `[!CAUTION]` blockquotes.
+
+### 🛡️ Enterprise-Grade Utilities
+- **Spam Protection:** Integrated temp-mail domain blocker for the contact form via `public/data/tempmail.json`.
+- **Smart Table of Contents:** Automatically generated TOC with active-state scroll tracking for long-form articles.
+- **Search & Command Palette:** Global `Cmd+K` search modal for instant navigation across the entire platform.
+- **Secure Link Bridge:** Protects users with a transition page for all external links.
+
+### ✍️ Authors System
+- **Contributor Dossiers:** Comprehensive directory of contributors with high-fidelity profile pages, social integration, and contribution metrics.
+
+---
+
+## 🚀 Getting Started
+
+### 1. Prerequisites
+- **Node.js**: v20.x or higher
+- **Package Manager**: `pnpm` (recommended)
+
+### 2. Installation & Setup
 ```bash
 # Clone the repository
 git clone https://github.com/prasad-kmd/featured-project-web.git
 
-# Navigate to project
+# Navigate to the project directory
 cd featured-project-web
 
 # Install dependencies
 pnpm install
+
+# Create local data directory if missing
+mkdir -p public/data
 ```
 
-### 2. Branding & Configuration
-Modify `lib/config.ts` to define your identity:
+### 3. Identity Configuration
+Customize the workspace by editing `lib/config.ts`:
 ```typescript
 export const siteConfig = {
-  title: "Your Engineering Space",
-  author: "Engineer Name",
+  title: "Your Workspace Name",
+  author: "Your Name",
   githubUsername: "your-handle",
-  // social links, toolbox, etc.
+  url: "https://your-domain.com",
+  // social links, toolbox, contact info, etc.
 };
 ```
 
-### 3. Launch Development Server
+### 4. Development & Production
 ```bash
+# Start development server
 pnpm dev
+
+# Build for production
+pnpm build
+pnpm start
 ```
-Explore the workspace at `http://localhost:3000`.
+The site will be available at `http://localhost:3000`.
+
+---
 
 ## 📝 Content Management
-Adding content requires no coding. Simply create a file in the appropriate directory within `/content`.
 
-### Frontmatter Standard
-All content files must include YAML frontmatter:
+To add new content, create a file in the appropriate directory within `content/`.
+
+### Frontmatter Example
+All files require YAML frontmatter to populate metadata:
 ```markdown
 ---
-title: "Computational Fluid Dynamics in Robotics"
-slug: "cfd-robotics"
-date: "2025-08-15"
+title: "Computational Kinematics in Robotics"
+slug: "computational-kinematics"
+date: "2025-05-15"
 status: "Published"
+description: "In-depth analysis of mechatronic system efficiency."
 author: "your-author-slug"
-tags: ["CFD", "Robotics", "Research"]
+tags: ["Engineering", "Research"]
+category: "Mechatronics"
 ---
 ```
 
-### Interactive Components
-Use shortcodes directly in your Markdown:
-- **Math:** `$E=mc^2$` or `$$\text{Full Equation}$$`
-- **Quizzes:** `[quiz] { ...json data... } [/quiz]`
-- **Alerts:** `> [!NOTE] This is a GitHub-style alert.`
+### Interactive Shortcodes
+- **Math:** `$E=mc^2$`
+- **Quizzes:**
+  ```text
+  [quiz]
+  {
+    "question": "What is the primary law of robotics?",
+    "options": ["Don't harm humans", "Obey orders", "Self-protection"],
+    "answer": 0
+  }
+  [/quiz]
+  ```
 
-## 📂 Project Navigation
+---
+
+## 📂 Project Structure
+
 ```text
-├── app/              # Next.js Routes & API (Logic)
-├── components/       # UI Library & Feature Components
-├── content/          # The "Database" (Markdown/HTML files)
-├── lib/              # CMS Pipeline & Shared Utilities
-├── public/           # Static Assets (Images, Fonts, Data)
-├── hooks/            # Custom React Hooks
-└── types/            # Shared TypeScript Interfaces
+├── app/              # Next.js App Router (Routes & API)
+├── components/       # Reusable UI library and features
+├── content/          # Your "Database" (Markdown/HTML files)
+├── lib/              # CMS Pipeline, utilities, and config
+├── hooks/            # Custom React hooks for global state
+├── public/           # Static assets (Fonts, Images, JSON data)
+└── types/            # Shared TypeScript definitions
 ```
 
-## 🛠 Tech Stack & Tools
+## 🛠 Tech Stack
 - **Framework:** Next.js 16 (App Router)
-- **Content:** Marked, Shiki, KaTeX, Gray-matter
-- **Animations:** Framer Motion, GSAP
+- **Styling:** Tailwind CSS 4
+- **Syntax Highlighting:** Shiki
+- **Math:** KaTeX
+- **Animations:** Framer Motion & GSAP
 - **Icons:** Lucide React
 - **Theme:** next-themes
 
 ---
-Built with precision for the Engineering Community.
+
+Built with ❤️ for the Engineering Community.
